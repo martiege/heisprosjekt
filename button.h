@@ -19,6 +19,7 @@ typedef struct
 } OutsideButton;
 */
 
+void printSomeBull();
 
 void insideButtonLight(int lightOn, int currentFloor);
 
