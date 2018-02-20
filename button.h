@@ -26,7 +26,8 @@ void upButtonLight(int lightOn, int currentFloor);
 
 void downButtonLight(int lightOn, int currentFloor);
 
-void buttonCheck(elev_button_type_t button[4], int desiredFloor[4]);
+int buttonCheck(int* curlastFloor, int insideButtons[4], 
+	int outsideUpButtons[3], int outsideDownButtons[3], requestedFloors[4]);
 
 
 
