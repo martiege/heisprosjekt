@@ -3,7 +3,7 @@
 
 
 
-
+/*
 typedef struct
 {
 	//int lightOn;
@@ -17,10 +17,14 @@ typedef struct
 	Button button;
 	int desiredDirection;
 } OutsideButton;
+*/
 
 
+void insideButtonLight(int lightOn, int currentFloor);
 
-void buttonLight(int lightOn, int currentFloor);
+void upButtonLight(int lightOn, int currentFloor);
+
+void downButtonLight(int lightOn, int currentFloor);
 
 void buttonCheck(elev_button_type_t button[4], int desiredFloor[4]);
 
