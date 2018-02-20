@@ -8,8 +8,4 @@ typedef struct
 	// can be used to calculate which floor to go to.
 } currentState;
 
-<<<<<<< HEAD
-// crazy comment
-=======
-// new comment
->>>>>>> other
+// fancy comment
