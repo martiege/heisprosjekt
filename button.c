@@ -83,7 +83,7 @@ int buttonCheck(int* curlastFloor, int insideButtons[4],
 		}
 		
 		 // turn light off if reached 
-		if ((changedFloor) && ((*curlastFloor) == i))
+		if ((*curlastFloor) == i) && (elev_get_floor_sensor_signal() == i))
 		{
 			insideButtonLight(0, i);
 			insideButtons[i] = 0;
