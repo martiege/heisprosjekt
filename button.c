@@ -40,44 +40,55 @@ typedef struct
 int buttonCheck(int* curlastFloor, int insideButtons[4], 
 	int outsideUpButtons[3], int outsideDownButtons[3], requestedFloors[4])
 {
+	int changedFloor = 0;
 	if (elev_get_floor_sensor_signal() != -1) 
 	{
 		*curlastFloor = elev_get_floor_sensor_signal();
+		changedFloor = 1;
 	}
+	
 	for (int i = 0; i < 4; i++)
 	{
 		// check the buttons for input from each floor
 		// saves the result in the appropriate arrays
-		if (i != 4)
+		if ((i != 3) && (!(outsideUpButtons[i])))
 		{
 			outsideUpButtons[i] = elev_get_button_signal(BUTTON_CALL_UP, i);
+			/*
 			if (outsideUpButtons[i])
 			{
 				++requestedFloors[i]; // if we want to move to a certain floor, increment
 			}
+			*/
 		}
-		if (i != 0)
+		if ((i != 0) && (!(outsideDownButtons[i])))
 		{
 			outsideDownButtons[i] = elev_get_button_signal(BUTTON_CALL_DOWN, i);
+			/*
 			if (outsideDownButtons[i])
 			{
 				++requestedFloors[i];
 			}
+			*/
 		}
-		
-		insideButtons[i] = elev_get_button_signal(BUTTON_COMMAND, i);
-		if (insideButtons[i])
+		if (!(insideButtons[i]))
 		{
-			++requestedFloors[i];
+			insideButtons[i] = elev_get_button_signal(BUTTON_COMMAND, i);
+			/*
+			if (insideButtons[i])
+			{
+				++requestedFloors[i];
+			}
+			*/
 		}
 		
 		 // turn light off if reached 
-		if (*curlastFloor == i)
+		if ((changedFloor) && ((*curlastFloor) == i))
 		{
 			insideButtonLight(0, i);
 			insideButtons[i] = 0;
 			requestedFloors[i] = 0; // set the request weigth to 0 as we've reached the floor
-			if (i != 4)
+			if (i != 3)
 			{
 				upButtonLight(0, i);
 				outsideUpButtons[i] = 0;
