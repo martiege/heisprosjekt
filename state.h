@@ -7,3 +7,6 @@ typedef struct
 	int requestedFloors[4]; // holds requests for spesific floors. 
 	// can be used to calculate which floor to go to.
 } currentState;
+
+
+// fancy comment
