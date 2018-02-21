@@ -1,6 +1,8 @@
 typedef struct 
 {
 	int curlastFloor; // recording the current or previous floor
+	int targetFloor; // the target floor, -1 for no target (elevator stop)
+	int currentDirection; // the current direction
 	int insideButtons[4]; // state of inside buttons, on / off
 	int outsideUpButtons[3]; // state of outside up buttons, on / off
 	int outsideDownButtons[3]; // state of inside up buttons, on / off

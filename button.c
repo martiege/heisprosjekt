@@ -100,6 +100,7 @@ int buttonCheck(int* curlastFloor, int insideButtons[4],
 			}
 		}
 	}
+	return changedFloor;
 }
 
 
