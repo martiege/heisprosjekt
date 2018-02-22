@@ -11,9 +11,13 @@ int shouldStop(int currentFloor, int currentDirection, int insideButtons[4],
 	int outsideUpButtons[3], int outsideDownButtons[3]);
 
 // targetFloor is -1, no current target. returns 0 if no new target
-int nextTargetFloor(int currentFloor, int* currentDirection, int* targetFloor, 
+int nextTargetFloor(int currentFloor, int currentDirection, int* targetFloor, 
 	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3]);
 
-void moveToFloor(int* currentFloor, int* targetFloor);
+void moveToFloor(int* currentFloor, int* targetFloor, int* currentDirection, 
+	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3], 
+	int requestedFloors[4]);
+
+
 
 #endif // #ifndef __INCLUDE_LOGIC_H__

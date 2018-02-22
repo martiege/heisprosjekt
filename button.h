@@ -19,16 +19,16 @@ typedef struct
 } OutsideButton;
 */
 
-void printSomeBull();
-
 void insideButtonLight(int lightOn, int currentFloor);
 
 void upButtonLight(int lightOn, int currentFloor);
 
 void downButtonLight(int lightOn, int currentFloor);
 
-int buttonCheck(int* curlastFloor, int insideButtons[4], 
-	int outsideUpButtons[3], int outsideDownButtons[3], requestedFloors[4]);
+void floorLight(int curlastFloor);
+
+void buttonCheck(int curlastFloor, int currentDirection, int insideButtons[4], 
+	int outsideUpButtons[3], int outsideDownButtons[3], int requestedFloors[4]);
 
 
 
