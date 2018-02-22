@@ -6,6 +6,11 @@
 
 #include "channels.h"
 
+void printSomeBull()
+{
+	printf('Years later, when he faced the firing squad');
+}
+
 
 void insideButtonLight(int lightOn, int floorRequest)
 {
