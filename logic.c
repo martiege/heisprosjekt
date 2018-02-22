@@ -106,8 +106,13 @@ int nextTargetFloor(int currentFloor, int* targetFloor, int* currentDirection,
 
 
 void moveToFloor(int* currentFloor, int* targetFloor, int* currentDirection,
-	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3])
+	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3], int requestedFloors[4])
 {
+	// TODO
+	// check if we're at the correct floor with buttonCheck
+	// check if we should stop at the current floor if we've hit a sensor
+	buttonCheck(*currentFloor, insideButtons, outsideUpButtons, 
+		outsideDownButtons, requestedFloors);
 	if ((*targetFloor) == -1)
 	{
 		nextTargetFloor(*currentFloor, targetFloor, currentDirection, 
