@@ -33,10 +33,10 @@ int main() {
         // Change direction when we reach top/bottom floor
         if (elev_get_floor_sensor_signal() == N_FLOORS - 1) {
             elev_set_motor_direction(DIRN_DOWN);
-	    sleep(1);
+			sleep(1);
         } else if (elev_get_floor_sensor_signal() == 0) {
             elev_set_motor_direction(DIRN_UP);
-	    sleep(1);
+			sleep(1);
         }
         // Stop elevator and exit program if the stop button is pressed
         if (elev_get_stop_signal()) {
