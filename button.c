@@ -29,6 +29,25 @@ void floorLight(int curlastFloor)
 	}
 }
 
+void clearFloor(int floor, int insideButtons[4], int outsideUpButtons[3], 
+	int outsideDownButtons[3], int requestedFloors[4])
+{
+	insideButtonLight(0, floor);
+	insideButtons[floor] = 0;
+	requestedFloors[floor] = 0; // set the request weigth to 0 
+		// as we've reached the floor
+	if ( (floor != 3) )
+	{
+		upButtonLight(0, floor);
+		outsideUpButtons[floor] = 0; 
+	}
+	if ( (floor != 0) )
+	{
+		downButtonLight(0, floor);
+		outsideDownButtons[floor - 1] = 0;
+	}
+}
+
 /*
 
 typedef struct 
@@ -44,7 +63,7 @@ typedef struct
 */
 
 
-void buttonCheck(int curlastFloor, int currentDirection, int insideButtons[4], 
+void buttonCheck(int curlastFloor, int currentDirection, int targetFloor, int insideButtons[4], 
 	int outsideUpButtons[3], int outsideDownButtons[3], int requestedFloors[4])
 {	
 	if ( (curlastFloor != -1) && (elev_get_floor_sensor_signal() == curlastFloor) )
@@ -53,12 +72,12 @@ void buttonCheck(int curlastFloor, int currentDirection, int insideButtons[4],
 		insideButtons[curlastFloor] = 0;
 		requestedFloors[curlastFloor] = 0; // set the request weigth to 0 
 			// as we've reached the floor
-		if ( (curlastFloor != 3) && (currentDirection == 1) )
+		if ( (curlastFloor != 3) && ( (currentDirection == 1) || (curlastFloor == targetFloor) || (targetFloor == -1) ) )
 		{
 			upButtonLight(0, curlastFloor);
 			outsideUpButtons[curlastFloor] = 0; 
 		}
-		if ( (curlastFloor != 0) && (currentDirection == -1) )
+		if ( (curlastFloor != 0) && ( (currentDirection == -1) || (curlastFloor == targetFloor) || (targetFloor == -1) ) )
 		{
 			downButtonLight(0, curlastFloor);
 			outsideDownButtons[curlastFloor - 1] = 0;

@@ -27,7 +27,10 @@ void downButtonLight(int lightOn, int currentFloor);
 
 void floorLight(int curlastFloor);
 
-void buttonCheck(int curlastFloor, int currentDirection, int insideButtons[4], 
+void clearFloor(int floor, int insideButtons[4], int outsideUpButtons[3], 
+	int outsideDownButtons[3], int requestedFloors[4]);
+
+void buttonCheck(int curlastFloor, int targetFloor, int currentDirection, int insideButtons[4], 
 	int outsideUpButtons[3], int outsideDownButtons[3], int requestedFloors[4]);
 
 

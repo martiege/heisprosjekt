@@ -15,7 +15,7 @@ int main() {
         return 1;
     }
 
-    printf("Press STOP button to stop elevator and exit program.\n");
+    printf("Press OBSTRUCTION switch to stop elevator and exit program.\n");
 
     elev_set_motor_direction(0);
 
@@ -39,6 +39,7 @@ int main() {
 	int toStop = 0;
 	int stopLight = 1;
 	int timer = 0;
+	int emergency = 0;
 
     while (!stop) {
 
@@ -49,20 +50,26 @@ int main() {
 			
 			if (currentLastFloor == targetFloor)
 			{
+				//printf("AT TARGETFLOOR %d, need to stop\n", targetFloor);
 				targetFloor = -1;
 				currentDirection = 0;
+				elev_set_motor_direction(currentDirection);
 				toStop = 1;	
-				elev_set_door_open_lamp(1);				
+				elev_set_door_open_lamp(1);	
+				openDoor = 1;		
+				timer = time(NULL);
+				//printf("Time: %d \n", timer);
+				//usleep(3000000);
 				/*
 				elev_set_stop_lamp(stopLight);
 				stopLight = !stopLight;
 				*/
 			}
 
-			if (shouldStop(currentLastFloor, currentDirection, insideButtons,
+			else if (shouldStop(currentLastFloor, currentDirection, insideButtons,
 				outsideUpButtons, outsideDownButtons))
 			{
-				printf("AT FLOOR %d and I need to stop \n", currentLastFloor);
+				//printf("AT FLOOR %d and I need to stop \n", currentLastFloor);
 				openDoor = 1;
 				timer = time(NULL);
 				elev_set_motor_direction(0);
@@ -71,7 +78,7 @@ int main() {
 		}
 
 		// CHANGE TARGET FLOOR - aka endre dir
-		if (targetFloor == -1)
+		if ((targetFloor == -1) && (timer == 0))
 		{
 			if ( ! (nextTargetFloor(currentLastFloor, &targetFloor, 
 				&currentDirection, insideButtons, outsideUpButtons, 
@@ -79,6 +86,7 @@ int main() {
 			{
 				// automatically moves to 1st floor
 				// if there are no new targets, could be removed
+/*	
 				if (currentLastFloor == 0)
 				{
 					targetFloor = -1;
@@ -90,19 +98,69 @@ int main() {
 					targetFloor = 0;
 					currentDirection = -1;
 				}
+*/
+				// target has been reached, if necessary a new target
+				// will be set next
+
+				targetFloor = -1;
+				currentDirection = 0;
+				
+				if (currentLastFloor == -1)
+				{
+					targetFloor = 0;
+					currentDirection = -1;
+				}
+
 			}
 		}
-
-		if ( (timer + 3) >= time(NULL) )
+/*
+		if (elev_get_obstruction_signal())
 		{
+			elev_set_door_open_lamp(1);	
+			//printf("Timer: %d Time: %d \n", timer, time(NULL));
+		}
+*/
+		if (timer)
+		{
+			elev_set_motor_direction(0);
+			if ( (timer + 3) <= time(NULL) )
+			{
+				//printf("Timer: %d Time: %d \n", timer, time(NULL));
+				openDoor = 0;
+				toStop = 0;
+				timer = 0;
+				elev_set_door_open_lamp(0);
+				elev_set_motor_direction(currentDirection);
+			}
+		}
+		else
+		{
+			elev_set_motor_direction(currentDirection);
+		}
+/*
+		if ( (timer + 3) <= time(NULL))
+		{
+			printf("Timer: %d Time: %d \n", timer, time(NULL));
 			openDoor = 0;
 			toStop = 0;
 			timer = 0;
-			elev_set_motor_direction(currentDirection);
 			elev_set_door_open_lamp(0);
+			//elev_set_motor_direction(currentDirection);
 		}
-		
-		if (!openDoor && !toStop)
+		else
+		{
+			if (!timer)
+			{
+				elev_set_motor_direction(currentDirection);
+			}
+			else
+			{
+				elev_set_motor_direction(0);
+			}
+		}
+*/		
+/*
+		if (!timer)
 		{
 			elev_set_motor_direction(currentDirection);
 		}
@@ -111,9 +169,9 @@ int main() {
 			elev_set_motor_direction(0);
 			usleep(1000);
 		}
-
+*/
 		// updates the buttons after we've figured out if we should stop
-		buttonCheck(currentLastFloor, currentDirection, insideButtons, outsideUpButtons,
+		buttonCheck(currentLastFloor, currentDirection, targetFloor, insideButtons, outsideUpButtons,
 			outsideDownButtons, requestedFloors);
 		
 		/*
@@ -128,9 +186,36 @@ int main() {
 			//sleep(1);
         }
 		*/
-        // Stop elevator and exit program if the stop button is pressed
-        if (elev_get_stop_signal()) {
-			printf("STOPPER!!");
+		emergency = elev_get_stop_signal();
+		while (emergency)
+		{
+			emergency = elev_get_stop_signal();
+			elev_set_stop_lamp(1);
+			elev_set_motor_direction(0);
+			currentDirection = 0;
+			targetFloor = -1;
+
+			for (int i = 0; i < 4; ++i)
+			{
+				clearFloor(i, insideButtons, outsideUpButtons, outsideDownButtons, requestedFloors);
+			}
+
+			if (!emergency)
+			{
+				elev_set_stop_lamp(0);
+				elev_set_motor_direction(0);
+				if  (elev_get_floor_sensor_signal() != -1) 
+				{
+					openDoor = 1;
+					timer = time(NULL);
+					elev_set_door_open_lamp(1);
+				}
+			}
+		}
+		
+        // Stop elevator and exit program if the obstruction pin is switched
+        if (elev_get_obstruction_signal()) {
+			printf("STOPPER!! \n");
 			currentDirection = 0;
             elev_set_motor_direction(currentDirection);
 			stop = 1;
