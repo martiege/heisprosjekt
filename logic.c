@@ -3,6 +3,10 @@
 
 #include "logic.h"
 
+
+
+
+
 int desiredDirection(int currentFloor, int targetFloor)
 {
 	if (currentFloor == targetFloor)
@@ -20,27 +24,29 @@ int desiredDirection(int currentFloor, int targetFloor)
 }
 
 
-int shouldStop(int currentFloor, int currentDirection, int insideButtons[4],
-	int outsideUpButtons[3], int outsideDownButtons[3])
+int toStop(state* current)
 {
-	if (insideButtons[currentFloor])
+	if ((current->buttons)[BUTTON_COMMAND][current->floor])
 	{
 		return 1;
 	}
-	if ((currentFloor != 3) && (outsideUpButtons[currentFloor]))
+
+	if ( (current->floor != 3) && ((current->buttons)[BUTTON_CALL_UP][current->floor]) )
 	{
-		if (currentDirection == 1)
-		{
-			return 1;
-		}
-	}
-	if ((currentFloor != 0) && (outsideDownButtons[currentFloor - 1]))
-	{
-		if (currentDirection == -1)
-		{
-			return 1;
-		}
-	}
+		if (current->dir == 1)
+    		{
+      			return 1;
+    		}
+  	}
+  	
+	if ( (current->floor != 0) && ((current->buttons)[BUTTON_CALL_DOWN][current->floor]) )
+  	{
+    		if (current->dir == -1)
+    		{
+    	  	return 1;
+    		}
+  	}
+	
 	return 0;
 }
 
@@ -83,15 +89,18 @@ int nextTargetFloor(int currentFloor, int* targetFloor, int currentDirection,
 //decides next target floor based on priority
 int nextTarget(state* current)
 {
+	
+	//prioritizes the ground and 4th floors
+	int priorityList[4] = {0, 3, 1, 2};
 	for (int i = 0; i < 4; ++i)
 	{
 		// cannot set new target to be the current floor
 		if ((current->floor) != priorityList[i])
 		{
 			// checks if there are any buttons pressed on the current floor
-				 ((f != 3) && ((current->buttons)[BUTTON_CALL_UP][f])) ||
-				 ((f != 0) && ((current->buttons)[BUTTON_CALL_DOWN][f])) )
-			if ( ((current->buttons)[BUTTON_COMMAND][f]) || 
+			if ( ((current->buttons)[BUTTON_COMMAND][priorityList[i]]) || 
+				 ((priorityList[i] != 3) && ((current->buttons)[BUTTON_CALL_UP][priorityList[i]])) ||
+				 ((priorityList[i] != 0) && ((current->buttons)[BUTTON_CALL_DOWN][priorityList[i]])) )
 			{
 				current->target = priorityList[i];
 				current->dir = desiredDirection(current->floor, priorityList[i]);
@@ -174,6 +183,102 @@ int updateFloor(int* curlastFloor)
 	return 0;
 }
 
+
+void runElevatorLogic()
+{
+	int stop = 0;
+	state currentState;
+	state* current = &currentState;
+	state_init(current);
+	elev_set_motor_direction(0);
+
+    while (!stop) {
+		// NEW FLOOR
+		if ( updateFloor(&(current->floor)) )
+		{
+			floorLight(current->floor);
+			
+			if ((current->floor) == (current->target))
+			{
+				current->target = -1;
+				current->dir = 0;
+				openDoor(&(current->timer));
+				clearButtons((current->floor), current);
+			}
+
+			else if (toStop(current))
+			{
+				openDoor(&(current->timer));
+				clearButtons((current->floor), current);
+			}
+		}
+
+		// CHANGE TARGET FLOOR - aka endre dir
+		if ((current->target == -1) && (current->timer == 0))
+		{
+			if (((current->floor != 3) && (elev_get_button_signal(BUTTON_CALL_UP, current->floor)))   || 
+				((current->floor != 0) && (elev_get_button_signal(BUTTON_CALL_DOWN, current->floor))) || 
+				(elev_get_button_signal(BUTTON_COMMAND, current->floor)) )
+			{
+				openDoor(&(current->timer));
+			}
+			
+			else if ( !(nextTarget(current)) ) 
+			{
+				// target has been reached, if necessary a new target
+				// will be set next
+
+				current->target = -1;
+				current->dir = 0;
+				
+				// if we're in an undefined state (shouldn't happen after state_init)
+				// there should be set a target for 1st floor
+				if (current->floor == -1)
+				{
+					current->target = 0;
+					current->dir = -1;
+				}
+
+			}
+			else
+			{
+				current->dir = desiredDirection(current->floor, current->target);
+			}
+		}
+
+		if (current->timer)
+		{
+			elev_set_motor_direction(0);
+			if ( (current->timer + 3) <= time(NULL) )
+			{
+				closeDoor(&(current->timer), current->dir);
+			}
+		}
+		else
+		{
+			elev_set_motor_direction(current->dir);
+		}
+
+		buttonUpdate(current);
+
+
+		current->emergency = elev_get_stop_signal();
+		if (current->emergency)
+		{
+			handleEmergency(current);
+		}
+
+        // Stop elevator and exit program if the obstruction pin is switched
+        if (elev_get_obstruction_signal()) 
+		{
+			printf("STOPPER!! \n");
+			current->dir = 0;
+            elev_set_motor_direction(current->dir);
+			stop = 1;
+        }
+		usleep(1000);
+    }
+}
 
 
 #endif // #ifndef __INCLUDE_LOGIC_C__

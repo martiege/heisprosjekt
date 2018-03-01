@@ -7,29 +7,28 @@
 #include "elev.h"
 #include "channels.h"
 
-
 void floorLight(int floor)
 {
-	if (curlastFloor != -1)
+	if (floor != -1)
 	{
-		elev_set_floor_indicator(curlastFloor);
+		elev_set_floor_indicator(floor);
 	}
 }
 
 
 void clearButtons(int floor, state* current)
 {
-	insideButtonLight(0, floor);
+	elev_set_button_lamp(BUTTON_COMMAND, floor, 0);
 	(current->buttons)[BUTTON_COMMAND][floor] = 0;
 
 	if (floor != 3)
 	{
-		upButtonLight(0, floor);
+		elev_set_button_lamp(BUTTON_CALL_UP, floor, 0);
 		(current->buttons)[BUTTON_CALL_UP][floor] = 0;
 	}
 	if (floor != 0)
 	{
-		downButtonLight(0, floor);
+		elev_set_button_lamp(BUTTON_CALL_DOWN, floor, 0);
 		(current->buttons)[BUTTON_CALL_DOWN][floor] = 0;
 	}
 }
@@ -38,11 +37,12 @@ void clearButtons(int floor, state* current)
 void buttonUpdate(state* current)
 {
 	// clear the buttons on the current floor if necessary
-	if ( ((current->floor) != -1) && ((current->floor) == elev_get_floor_sensor_signal()) )
+/*
+	if ( ((current->floor) != -1) && ((current->floor) == elev_get_floor_sensor_signal()))
 	{
 		clearButtons((current->floor), current);
 	}
-
+*/
 	// go through all the floors
 	for (int f = 0; f < 4; ++f)
 	{

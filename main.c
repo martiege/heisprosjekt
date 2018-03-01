@@ -1,3 +1,6 @@
+#ifndef __INCLUDE_MAIN_C__
+#define __INCLUDE_MAIN_C__
+
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
@@ -6,6 +9,8 @@
 #include "button.h"
 #include "state.h"
 #include "logic.h"
+#include "channels.h"
+#include "io.h"
 
 
 
@@ -20,12 +25,14 @@ int main() {
 
     printf("Press OBSTRUCTION switch to stop elevator and exit program.\n");
 
-    elev_set_motor_direction(0);
-
+	runElevatorLogic();
+	
+/*    
 	int stop = 0;
 	state currentState;
 	state* current = &currentState;
 	state_init(current);
+	elev_set_motor_direction(0);
 
     while (!stop) {
 		// NEW FLOOR
@@ -111,7 +118,10 @@ int main() {
         }
 		usleep(1000);
     }
-
+*/
     printf("End of program\n");
     return 0;
 }
+
+
+#endif // #ifndef __INCLUDE_MAIN_C__

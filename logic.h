@@ -9,9 +9,6 @@
 #include "state.h"
 
 
-//prioritizes the ground and 4th floors
-int priorityList = {0, 3, 1, 2};
-
 
 // returns the desired direction based on the current floor and the targeted floor
 int desiredDirection(int currentFloor, int targetFloor);
@@ -36,5 +33,8 @@ void closeDoor(int* timer, int currentDirection);
 
 // handle emergency
 void handleEmergency(state* current);
+
+void runElevatorLogic();
+
 
 #endif // #ifndef __INCLUDE_LOGIC_H__

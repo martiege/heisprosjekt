@@ -7,7 +7,6 @@
 #include "elev.h"
 #include "channels.h"
 
-
 // ensures that the elev_set_floor_indicator
 // isn't called with an invalid floor value
 void floorLight(int floor);
