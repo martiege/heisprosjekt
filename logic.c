@@ -176,27 +176,4 @@ int updateFloor(int* curlastFloor)
 
 
 
-void moveToFloor(int* currentFloor, int* targetFloor, int* currentDirection,
-	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3],
-	int requestedFloors[4])
-{
-	// TODO
-	// check if we're at the correct floor with buttonCheck
-	// check if we should stop at the current floor if we've hit a sensor
-	buttonCheck(currentFloor, insideButtons, outsideUpButtons,
-		outsideDownButtons, requestedFloors);
-	if ((*targetFloor) == -1)
-	{
-		nextTargetFloor(*currentFloor, targetFloor, currentDirection,
-			insideButtons, outsideUpButtons, outsideDownButtons);
-	}
-	*currentDirection = desiredDirection(*currentFloor, *targetFloor);
-
-	if (shouldStop(currentFloor, currentDirection, insideButtons, outsideUpButtons, outsideDownButtons))
-	{
-		elev_set_motor_direction(0);
-	}
-}
-
-
 #endif // #ifndef __INCLUDE_LOGIC_C__
