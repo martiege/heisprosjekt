@@ -1,8 +1,11 @@
 #ifndef __INCLUDE_BUTTON_C__
 #define __INCLUDE_BUTTON_C__
 
-#include "state.h"
+#include <stdio.h>
 
+#include "state.h"
+#include "elev.h"
+#include "channels.h"
 
 // OLD possibly don't need these functions, as they are only 
 // layers above one other function

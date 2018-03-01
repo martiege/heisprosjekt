@@ -1,8 +1,9 @@
 #ifndef __INCLUDE_BUTTON_C__
 #define __INCLUDE_BUTTON_C__
 
-#include <stdio.h>
 #include "button.h"
+
+#include "state.h"
 #include "elev.h"
 #include "channels.h"
 

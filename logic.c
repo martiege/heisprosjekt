@@ -70,7 +70,7 @@ int shouldStop(int currentFloor, int currentDirection, int insideButtons[4],
 
 
 
-int nextTargetFloor(int currentFloor, int* targetFloor, int* currentDirection,
+int nextTargetFloor(int currentFloor, int* targetFloor, int currentDirection,
 	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3])
 {
 	// TODO: add logic prioritize 1st floor, then 4th
@@ -84,19 +84,19 @@ int nextTargetFloor(int currentFloor, int* targetFloor, int* currentDirection,
 			if (insideButtons[i] )
 			{
 				*targetFloor = i;
-				*currentDirection = desiredDirection(currentFloor, i);
+				//*currentDirection = desiredDirection(currentFloor, i);
 				break;
 			}
 			if ((i != 3) && (outsideUpButtons[i]))
 			{
 				*targetFloor = i;
-				*currentDirection = desiredDirection(currentFloor, i);
+				//*currentDirection = desiredDirection(currentFloor, i);
 				break;
 			}
 			if ((i != 0) && (outsideDownButtons[i - 1]))
 			{
 				*targetFloor = i;
-				*currentDirection = desiredDirection(currentFloor, i);
+				//*currentDirection = desiredDirection(currentFloor, i);
 				break;
 			}
 		}
@@ -104,11 +104,6 @@ int nextTargetFloor(int currentFloor, int* targetFloor, int* currentDirection,
 	return ((*targetFloor) != -1);
 }
 
-typedef enum tag_elev_lamp_type { 
-    BUTTON_CALL_UP = 0,
-    BUTTON_CALL_DOWN = 1,
-    BUTTON_COMMAND = 2
-} elev_button_type_t;
 
 
 int nextTarget(state* current)
@@ -140,7 +135,7 @@ void openDoor(int* timer)
 
 void closeDoor(int* timer, int dir)
 {
-	timer = 0;
+	*timer = 0;
 	elev_set_door_open_lamp(0);
 	elev_set_motor_direction(dir);
 }
@@ -165,14 +160,14 @@ void handleEmergency(state* current)
 			clearButtons(i, current);
 		}
 
-		if (!emergency)
+		if (!(current->emergency))
 		{
 			elev_set_stop_lamp(0);
 			elev_set_motor_direction(0);
 			if  (elev_get_floor_sensor_signal() != -1) 
 			{
 				//openDoor = 1;
-				timer = time(NULL);
+				current->timer = time(NULL);
 				elev_set_door_open_lamp(1);
 			}
 		}

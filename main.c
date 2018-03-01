@@ -1,11 +1,13 @@
+#include <stdio.h>
+#include <time.h>
+#include <unistd.h>
+
 #include "elev.h"
 #include "button.h"
 #include "state.h"
 #include "logic.h"
 
-#include <stdio.h>
-#include <time.h>
-#include <unistd.h>
+
 
 
 
@@ -43,7 +45,7 @@ int main() {
 	int emergency = 0;
 
     while (!stop) {
-
+		//printf("While\n");
 		// NEW FLOOR
 		if (updateFloor(&currentLastFloor))
 		{
@@ -88,9 +90,10 @@ int main() {
 		if ((targetFloor == -1) && (timer == 0))
 		{
 			if ( ! (nextTargetFloor(currentLastFloor, &targetFloor, 
-				&currentDirection, insideButtons, outsideUpButtons, 
+				currentDirection, insideButtons, outsideUpButtons, 
 				outsideDownButtons)) )
 			{
+				//printf("waiting for new target\n");
 				// automatically moves to 1st floor
 				// if there are no new targets, could be removed
 /*	
@@ -118,6 +121,10 @@ int main() {
 					currentDirection = -1;
 				}
 
+			}
+			else
+			{
+				currentDirection = desiredDirection(currentLastFloor, targetFloor);
 			}
 		}
 /*
