@@ -22,6 +22,12 @@ void initState(int* curlastFloor, int* targetFloor, int* currentDirection,
 	}
 }
 
+void state_init(state* current)
+{
+	current->floor = -1;
+	current->target = -1;
+}
+
 int updateFloor(int* curlastFloor)
 {
 	int floor = elev_get_floor_sensor_signal();

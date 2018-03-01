@@ -13,6 +13,13 @@ typedef struct
 	// can be used to calculate which floor to go to.
 } currentState;
 
+typedef struct
+{
+	int floor; 			// records the current or last floor
+	int target;			// the target floor, -1 if there is no target
+	int dir; 			// the current direction of the motor
+	int buttons[3][4]; 	// 3x4 matrix containing the current state of the buttons. the first 
+} state;
 
 void initState(int* curlastFloor, int* targetFloor, int* currentDirection, 
 	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3]);
