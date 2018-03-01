@@ -19,7 +19,8 @@ int desiredDirection(int currentFloor, int targetFloor)
 	}
 }
 
-int shouldStop(int currentFloor, int currentDirection, int insideButtons[4], 
+
+int shouldStop(int currentFloor, int currentDirection, int insideButtons[4],
 	int outsideUpButtons[3], int outsideDownButtons[3])
 {
 	if (insideButtons[currentFloor])
@@ -43,36 +44,12 @@ int shouldStop(int currentFloor, int currentDirection, int insideButtons[4],
 	return 0;
 }
 
-int toStop(state* current)
-{
-	if ((current->buttons)[BUTTON_COMMAND][current->floor])
-	{
-		return 1;
-	}
-	if ( (current->floor != 3) && ((current->buttons)[BUTTON_CALL_UP][current->floor]) )
-	{
-		if (current->dir == 1)
-		{
-			return 1;
-		}
-	}
-	if ( (current->floor != 0) && ((current->buttons)[BUTTON_CALL_DOWN][current->floor]) )
-	{
-		if (current->dir == -1)
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-
-
 
 int nextTargetFloor(int currentFloor, int* targetFloor, int currentDirection,
 	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3])
 {
 	// TODO: add logic prioritize 1st floor, then 4th
-	
+
 	// will always prioritize:  insideButtons > outsideUpButtons > outsideDownButtons
 	// and:  1st floor > 2nd floor > 3rd floor > 4th floor
 	for (int i = 0; i < 4; ++i)
@@ -103,21 +80,21 @@ int nextTargetFloor(int currentFloor, int* targetFloor, int currentDirection,
 }
 
 
-
+//decides next target floor based on priority
 int nextTarget(state* current)
 {
-	for (int f = 0; f < 4; ++f)
+	for (int i = 0; i < 4; ++i)
 	{
 		// cannot set new target to be the current floor
-		if ((current->floor) != f)
+		if ((current->floor) != priorityList[i])
 		{
 			// checks if there are any buttons pressed on the current floor
-			if ( ((current->buttons)[BUTTON_COMMAND][f]) || 
 				 ((f != 3) && ((current->buttons)[BUTTON_CALL_UP][f])) ||
 				 ((f != 0) && ((current->buttons)[BUTTON_CALL_DOWN][f])) )
+			if ( ((current->buttons)[BUTTON_COMMAND][f]) || 
 			{
-				current->target = f;
-				current->dir = desiredDirection(current->floor, f);
+				current->target = priorityList[i];
+				current->dir = desiredDirection(current->floor, priorityList[i]);
 				break;
 			}
 		}
@@ -125,7 +102,7 @@ int nextTarget(state* current)
 	return ((current->target) != -1);
 }
 
-
+//resets timer, stops motor and opens door (lights up lamp)
 void openDoor(int* timer)
 {
 	*timer = time(NULL);
@@ -133,7 +110,7 @@ void openDoor(int* timer)
 	elev_set_door_open_lamp(1);
 }
 
-
+//resets timer, closes door (light turns off) and sets direction of motor
 void closeDoor(int* timer, int dir)
 {
 	*timer = 0;
@@ -142,6 +119,7 @@ void closeDoor(int* timer, int dir)
 }
 
 
+//logic for what to do in case the stop button is pressed
 void handleEmergency(state* current)
 {
 	// stops the elevator and updates the necessary values in the state
@@ -149,12 +127,12 @@ void handleEmergency(state* current)
 	elev_set_motor_direction(DIRN_STOP);
 	current->dir = DIRN_STOP;
 	current->target = -1;
-	
+
 	while (current->emergency)
 	{
 		// update the emergency variable
 		current->emergency = elev_get_stop_signal();
-		
+
 		// clears all the floor requests
 		for (int i = 0; i < 4; ++i)
 		{
@@ -165,7 +143,7 @@ void handleEmergency(state* current)
 		{
 			elev_set_stop_lamp(0);
 			elev_set_motor_direction(0);
-			if  (elev_get_floor_sensor_signal() != -1) 
+			if  (elev_get_floor_sensor_signal() != -1)
 			{
 				//openDoor = 1;
 				current->timer = time(NULL);
@@ -199,21 +177,21 @@ int updateFloor(int* curlastFloor)
 
 
 void moveToFloor(int* currentFloor, int* targetFloor, int* currentDirection,
-	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3], 
+	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3],
 	int requestedFloors[4])
 {
 	// TODO
 	// check if we're at the correct floor with buttonCheck
 	// check if we should stop at the current floor if we've hit a sensor
-	buttonCheck(currentFloor, insideButtons, outsideUpButtons, 
+	buttonCheck(currentFloor, insideButtons, outsideUpButtons,
 		outsideDownButtons, requestedFloors);
 	if ((*targetFloor) == -1)
 	{
-		nextTargetFloor(*currentFloor, targetFloor, currentDirection, 
+		nextTargetFloor(*currentFloor, targetFloor, currentDirection,
 			insideButtons, outsideUpButtons, outsideDownButtons);
 	}
 	*currentDirection = desiredDirection(*currentFloor, *targetFloor);
-	
+
 	if (shouldStop(currentFloor, currentDirection, insideButtons, outsideUpButtons, outsideDownButtons))
 	{
 		elev_set_motor_direction(0);

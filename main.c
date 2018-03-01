@@ -33,11 +33,7 @@ int main() {
 
     int requestedFloors[4] = {0, 0, 0, 0};
     // TODO clean up the state initilization
-    //currentState state = { currentLastFloor, targetFloor, currentDirection, insideButttons,
-	//outsideUpButtons, outsideDownButtons, requestedFloors };
 
-	
-	i
 	//int openDoor = 0;
 	//int toStop = 0;
 	//int stopLight = 1;
@@ -50,7 +46,6 @@ int main() {
 	state_init(current);
 
     while (!stop) {
-		//printf("While\n");
 		// NEW FLOOR
 		if ( updateFloor(&(current->floor)) )
 		{
@@ -169,39 +164,7 @@ int main() {
 		{
 			elev_set_motor_direction(current->dir);
 		}
-/*
-		if ( (timer + 3) <= time(NULL))
-		{
-			printf("Timer: %d Time: %d \n", timer, time(NULL));
-			openDoor = 0;
-			toStop = 0;
-			timer = 0;
-			elev_set_door_open_lamp(0);
-			//elev_set_motor_direction(currentDirection);
-		}
-		else
-		{
-			if (!timer)
-			{
-				elev_set_motor_direction(currentDirection);
-			}
-			else
-			{
-				elev_set_motor_direction(0);
-			}
-		}
-*/		
-/*
-		if (!timer)
-		{
-			elev_set_motor_direction(currentDirection);
-		}
-		else
-		{
-			elev_set_motor_direction(0);
-			usleep(1000);
-		}
-*/
+
 		// updates the buttons after we've figured out if we should stop
 		buttonUpdate(current);
 		//buttonCheck(currentLastFloor, currentDirection, targetFloor, insideButtons, outsideUpButtons,
@@ -243,9 +206,8 @@ int main() {
 			{
 				elev_set_stop_lamp(0);
 				elev_set_motor_direction(0);
-				if  (elev_get_floor_sensor_signal() != -1) 
+				if  (elev_get_floor_sensor_signal() != -1)
 				{
-					//openDoor = 1;
 					timer = time(NULL);
 					elev_set_door_open_lamp(1);
 				}
@@ -259,7 +221,6 @@ int main() {
 			current->dir = 0;
             elev_set_motor_direction(current->dir);
 			stop = 1;
-            //break; // #BreakIsBad
         }
 		usleep(1000);
     }
