@@ -41,31 +41,29 @@ int shouldStop(int currentFloor, int currentDirection, int insideButtons[4],
 		}
 	}
 	return 0;
-	/*
-	for (int i = 0; i < 4; ++i)
+}
+
+int toStop(state* current)
+{
+	if ((current->buttons)[BUTTON_COMMAND][current->floor])
 	{
-		
-		if (desiredDirection(currentFloor, insideButtons[i])  == currentDirection) 
+		return 1;
+	}
+	if ( (current->floor != 3) && ((current->buttons)[BUTTON_CALL_UP][current->floor]) )
+	{
+		if (current->dir == 1)
 		{
 			return 1;
 		}
-		
-		if (i != 3)
+	}
+	if ( (current->floor != 0) && ((current->buttons)[BUTTON_CALL_DOWN][current->floor]) )
+	{
+		if (current->dir == -1)
 		{
-			if (desiredDirection(currentFloor, outsideUpButtons[i]) == currentDirection)
-			{
-				return 1;
-			}
-		}
-		if (i != 0)
-		{
-			if (desiredDirection(currentFloor, outsideDownButtons[i - 1]) == currentDirection) 
-			{
-				return 1;
-			}
+			return 1;
 		}
 	}
-	*/
+	return 0;
 }
 
 
@@ -114,7 +112,9 @@ int nextTarget(state* current)
 		if ((current->floor) != f)
 		{
 			// checks if there are any buttons pressed on the current floor
-			if ( (current->buttons[BUTTON_COMMAND][f]) || ((f != 3) && (current->buttons[BUTTON_CALL_UP][f])) || ((f != 0) && (current->buttons[BUTTON_CALL_DOWN][f])) )
+			if ( ((current->buttons)[BUTTON_COMMAND][f]) || 
+				 ((f != 3) && ((current->buttons)[BUTTON_CALL_UP][f])) ||
+				 ((f != 0) && ((current->buttons)[BUTTON_CALL_DOWN][f])) )
 			{
 				current->target = f;
 				current->dir = desiredDirection(current->floor, f);
@@ -122,6 +122,7 @@ int nextTarget(state* current)
 			}
 		}
 	}
+	return ((current->target) != -1);
 }
 
 
@@ -172,6 +173,27 @@ void handleEmergency(state* current)
 			}
 		}
 	}
+}
+
+
+int updateFloor(int* curlastFloor)
+{
+	// checks for a valid floor
+	int floor = elev_get_floor_sensor_signal();
+	
+	if ( floor != -1 )
+	{
+		// checks for a new floor
+		if ( (floor != (*curlastFloor)) || ((*curlastFloor) == -1) ) 
+		{
+			// changes the floor and returns 1 to show that a change has happened
+			*curlastFloor = floor;
+			return 1;
+		}
+	}
+	
+	// returns 0 as there's been no change in floor
+	return 0;
 }
 
 

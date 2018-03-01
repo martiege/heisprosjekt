@@ -16,6 +16,8 @@ int desiredDirection(int currentFloor, int targetFloor);
 int shouldStop(int currentFloor, int currentDirection, int insideButtons[4], 
 	int outsideUpButtons[3], int outsideDownButtons[3]);
 
+int toStop(state* current);
+
 // OLD targetFloor is -1, no current target. returns 0 if no new target
 int nextTargetFloor(int currentFloor, int* targetFloor, int currentDirection, 
 	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3]);
@@ -31,6 +33,10 @@ void closeDoor(int* timer, int currentDirection);
 
 // handle emergency
 void handleEmergency(state* current);
+
+// updates the current / last (previous) floor variable 
+// returns 1 if there's been a change in floors (state), 0 otherwise
+int updateFloor(int* curlastFloor);
 
 
 

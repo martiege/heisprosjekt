@@ -39,9 +39,5 @@ void initState(int* curlastFloor, int* targetFloor, int* currentDirection,
 // initialize the state
 void state_init(state* current);
 
-// updates the current / last (previous) floor variable 
-// returns 1 if there's been a change in floors (state), 0 otherwise
-int updateFloor(int* curlastFloor);
-
 
 #endif // #ifndef __INCLUDE_STATE_H__

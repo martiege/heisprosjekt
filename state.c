@@ -70,24 +70,5 @@ void state_init(state* current)
 	current->floor = elev_get_floor_sensor_signal();
 }
 
-int updateFloor(int* curlastFloor)
-{
-	// checks for a valid floor
-	int floor = elev_get_floor_sensor_signal();
-	
-	if ( floor != -1 )
-	{
-		// checks for a new floor
-		if ( (floor != (*curlastFloor)) || ((*curlastFloor) == -1) ) 
-		{
-			// changes the floor and returns 1 to show that a change has happened
-			*curlastFloor = floor;
-			return 1;
-		}
-	}
-	
-	// returns 0 as there's been no change in floor
-	return 0;
-}
 
 #endif // #ifndef __INCLUDE_STATE_C__

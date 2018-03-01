@@ -23,7 +23,7 @@ int main() {
     elev_set_motor_direction(0);
 
     //elev_set_motor_direction(DIRN_UP);
-
+/*
     int currentLastFloor = -1;
     int targetFloor = -1;
     int currentDirection = 0; // TODO remember change type
@@ -37,26 +37,31 @@ int main() {
 	//outsideUpButtons, outsideDownButtons, requestedFloors };
 
 	
-	int stop = 0;
+	i
 	//int openDoor = 0;
 	//int toStop = 0;
 	//int stopLight = 1;
 	int timer = 0;
 	int emergency = 0;
+*/
+	int stop = 0;
+	state currentState;
+	state* current = &currentState;
+	state_init(current);
 
     while (!stop) {
 		//printf("While\n");
 		// NEW FLOOR
-		if (updateFloor(&currentLastFloor))
+		if ( updateFloor(&(current->floor)) )
 		{
-			floorLight(currentLastFloor);
+			floorLight(current->floor);
 			
-			if (currentLastFloor == targetFloor)
+			if ((current->floor) == (current->target))
 			{
 				//printf("AT TARGETFLOOR %d, need to stop\n", targetFloor);
-				targetFloor = -1;
-				currentDirection = 0;
-				openDoor(&timer);
+				current->target = -1;
+				current->dir = 0;
+				openDoor(&(current->timer));
 				/*
 				elev_set_motor_direction(0);
 				//toStop = 1;	
@@ -72,12 +77,11 @@ int main() {
 				*/
 			}
 
-			else if (shouldStop(currentLastFloor, currentDirection, insideButtons,
-				outsideUpButtons, outsideDownButtons))
+			else if (toStop(current))//(shouldStop(currentLastFloor, currentDirection, insideButtons, outsideUpButtons, outsideDownButtons))
 			{
 				//printf("AT FLOOR %d and I need to stop \n", currentLastFloor);
 				//openDoor = 1;
-				openDoor(&timer);
+				openDoor(&(current->timer));
 				/*
 				timer = time(NULL);
 				elev_set_motor_direction(0);
@@ -87,13 +91,21 @@ int main() {
 		}
 
 		// CHANGE TARGET FLOOR - aka endre dir
-		if ((targetFloor == -1) && (timer == 0))
+		if ((current->target == -1) && (current->timer == 0))
 		{
-			if ( ! (nextTargetFloor(currentLastFloor, &targetFloor, 
-				currentDirection, insideButtons, outsideUpButtons, 
-				outsideDownButtons)) )
+			if (((current->floor != 3) && (elev_get_button_signal(BUTTON_CALL_UP, current->floor)))   || 
+				((current->floor != 0) && (elev_get_button_signal(BUTTON_CALL_DOWN, current->floor))) || 
+				(elev_get_button_signal(BUTTON_COMMAND, current->floor)) )
 			{
-				//printf("waiting for new target\n");
+				openDoor(&(current->timer));
+			}
+			
+			else if ( !(nextTarget(current)) ) //( ! (nextTargetFloor(currentLastFloor, &targetFloor, 
+				//currentDirection, insideButtons, outsideUpButtons, 
+				//outsideDownButtons)) )
+			{
+				
+				printf("waiting for new target\n");
 				// automatically moves to 1st floor
 				// if there are no new targets, could be removed
 /*	
@@ -112,19 +124,22 @@ int main() {
 				// target has been reached, if necessary a new target
 				// will be set next
 
-				targetFloor = -1;
-				currentDirection = 0;
+				current->target = -1;
+				current->dir = 0;
 				
-				if (currentLastFloor == -1)
+				// if we're in an undefined state (shouldn't happen after state_init)
+				// there should be set a target for 1st floor
+				if (current->floor == -1)
 				{
-					targetFloor = 0;
-					currentDirection = -1;
+					current->target = 0;
+					current->dir = -1;
 				}
 
 			}
 			else
 			{
-				currentDirection = desiredDirection(currentLastFloor, targetFloor);
+				printf("changing direciton...\n");
+				current->dir = desiredDirection(current->floor, current->target);
 			}
 		}
 /*
@@ -134,15 +149,15 @@ int main() {
 			//printf("Timer: %d Time: %d \n", timer, time(NULL));
 		}
 */
-		if (timer)
+		if (current->timer)
 		{
 			elev_set_motor_direction(0);
-			if ( (timer + 3) <= time(NULL) )
+			if ( (current->timer + 3) <= time(NULL) )
 			{
 				//printf("Timer: %d Time: %d \n", timer, time(NULL));
 				//openDoor = 0;
 				//toStop = 0;
-				closeDoor(&timer, currentDirection);
+				closeDoor(&(current->timer), current->dir);
 				/*
 				timer = 0;
 				elev_set_door_open_lamp(0);
@@ -152,7 +167,7 @@ int main() {
 		}
 		else
 		{
-			elev_set_motor_direction(currentDirection);
+			elev_set_motor_direction(current->dir);
 		}
 /*
 		if ( (timer + 3) <= time(NULL))
@@ -188,8 +203,9 @@ int main() {
 		}
 */
 		// updates the buttons after we've figured out if we should stop
-		buttonCheck(currentLastFloor, currentDirection, targetFloor, insideButtons, outsideUpButtons,
-			outsideDownButtons, requestedFloors);
+		buttonUpdate(current);
+		//buttonCheck(currentLastFloor, currentDirection, targetFloor, insideButtons, outsideUpButtons,
+			//outsideDownButtons, requestedFloors);
 		
 		/*
         // Change direction when we reach top/bottom floor
@@ -203,7 +219,13 @@ int main() {
 			//sleep(1);
         }
 		*/
-		emergency = elev_get_stop_signal();
+
+		current->emergency = elev_get_stop_signal();
+		if (current->emergency)
+		{
+			handleEmergency(current);
+		}
+/*		
 		while (emergency)
 		{
 			emergency = elev_get_stop_signal();
@@ -229,12 +251,13 @@ int main() {
 				}
 			}
 		}
-		
+*/
         // Stop elevator and exit program if the obstruction pin is switched
-        if (elev_get_obstruction_signal()) {
+        if (elev_get_obstruction_signal()) 
+		{
 			printf("STOPPER!! \n");
-			currentDirection = 0;
-            elev_set_motor_direction(currentDirection);
+			current->dir = 0;
+            elev_set_motor_direction(current->dir);
 			stop = 1;
             //break; // #BreakIsBad
         }
