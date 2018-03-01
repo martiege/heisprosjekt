@@ -104,6 +104,82 @@ int nextTargetFloor(int currentFloor, int* targetFloor, int* currentDirection,
 	return ((*targetFloor) != -1);
 }
 
+typedef enum tag_elev_lamp_type { 
+    BUTTON_CALL_UP = 0,
+    BUTTON_CALL_DOWN = 1,
+    BUTTON_COMMAND = 2
+} elev_button_type_t;
+
+
+int nextTarget(state* current)
+{
+	for (int f = 0; f < 4; ++f)
+	{
+		// cannot set new target to be the current floor
+		if ((current->floor) != f)
+		{
+			// checks if there are any buttons pressed on the current floor
+			if ( (current->buttons[BUTTON_COMMAND][f]) || ((f != 3) && (current->buttons[BUTTON_CALL_UP][f])) || ((f != 0) && (current->buttons[BUTTON_CALL_DOWN][f])) )
+			{
+				current->target = f;
+				current->dir = desiredDirection(current->floor, f);
+				break;
+			}
+		}
+	}
+}
+
+
+void openDoor(int* timer)
+{
+	*timer = time(NULL);
+	elev_set_motor_direction(0);
+	elev_set_door_open_lamp(1);
+}
+
+
+void closeDoor(int* timer, int dir)
+{
+	timer = 0;
+	elev_set_door_open_lamp(0);
+	elev_set_motor_direction(dir);
+}
+
+
+void handleEmergency(state* current)
+{
+	// stops the elevator and updates the necessary values in the state
+	elev_set_stop_lamp(1);
+	elev_set_motor_direction(DIRN_STOP);
+	current->dir = DIRN_STOP;
+	current->target = -1;
+	
+	while (current->emergency)
+	{
+		// update the emergency variable
+		current->emergency = elev_get_stop_signal();
+		
+		// clears all the floor requests
+		for (int i = 0; i < 4; ++i)
+		{
+			clearButtons(i, current);
+		}
+
+		if (!emergency)
+		{
+			elev_set_stop_lamp(0);
+			elev_set_motor_direction(0);
+			if  (elev_get_floor_sensor_signal() != -1) 
+			{
+				//openDoor = 1;
+				timer = time(NULL);
+				elev_set_door_open_lamp(1);
+			}
+		}
+	}
+}
+
+
 
 void moveToFloor(int* currentFloor, int* targetFloor, int* currentDirection,
 	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3], 

@@ -1,6 +1,7 @@
 #include "elev.h"
 #include "button.h"
 #include "state.h"
+#include "logic.h"
 
 #include <stdio.h>
 #include <time.h>
@@ -35,9 +36,9 @@ int main() {
 
 	
 	int stop = 0;
-	int openDoor = 0;
-	int toStop = 0;
-	int stopLight = 1;
+	//int openDoor = 0;
+	//int toStop = 0;
+	//int stopLight = 1;
 	int timer = 0;
 	int emergency = 0;
 
@@ -53,11 +54,14 @@ int main() {
 				//printf("AT TARGETFLOOR %d, need to stop\n", targetFloor);
 				targetFloor = -1;
 				currentDirection = 0;
-				elev_set_motor_direction(currentDirection);
-				toStop = 1;	
+				openDoor(&timer);
+				/*
+				elev_set_motor_direction(0);
+				//toStop = 1;	
 				elev_set_door_open_lamp(1);	
-				openDoor = 1;		
+				//openDoor = 1;		
 				timer = time(NULL);
+				*/
 				//printf("Time: %d \n", timer);
 				//usleep(3000000);
 				/*
@@ -70,10 +74,13 @@ int main() {
 				outsideUpButtons, outsideDownButtons))
 			{
 				//printf("AT FLOOR %d and I need to stop \n", currentLastFloor);
-				openDoor = 1;
+				//openDoor = 1;
+				openDoor(&timer);
+				/*
 				timer = time(NULL);
 				elev_set_motor_direction(0);
 				elev_set_door_open_lamp(1);
+				*/
 			}
 		}
 
@@ -126,11 +133,14 @@ int main() {
 			if ( (timer + 3) <= time(NULL) )
 			{
 				//printf("Timer: %d Time: %d \n", timer, time(NULL));
-				openDoor = 0;
-				toStop = 0;
+				//openDoor = 0;
+				//toStop = 0;
+				closeDoor(&timer, currentDirection);
+				/*
 				timer = 0;
 				elev_set_door_open_lamp(0);
 				elev_set_motor_direction(currentDirection);
+				*/
 			}
 		}
 		else
@@ -206,7 +216,7 @@ int main() {
 				elev_set_motor_direction(0);
 				if  (elev_get_floor_sensor_signal() != -1) 
 				{
-					openDoor = 1;
+					//openDoor = 1;
 					timer = time(NULL);
 					elev_set_door_open_lamp(1);
 				}

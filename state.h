@@ -1,4 +1,8 @@
+#include "channels.h"
+#include "elev.h"
 
+#include <time.h>
+#include <unistd.h>
 
 typedef struct 
 {
@@ -15,17 +19,21 @@ typedef struct
 
 typedef struct
 {
-	int floor; 			// records the current or last floor
-	int target;			// the target floor, -1 if there is no target
-	int dir; 			// the current direction of the motor
-	int buttons[3][4]; 	// 3x4 matrix containing the current state of the buttons. the first 
+	int floor; 					// records the current or last floor
+	int target;					// the target floor, -1 if there is no target
+	elev_motor_direction_t dir; // the current direction of the motor
+	int timer; 					// timer for so we can control opening and closing doors7
+	int emergency;				// boolean value for if the elevator is in a state of emergency
+	int buttons[3][4]; 			// 3x4 matrix containing the current state of the buttons. the first 
 } state;
 
 void initState(int* curlastFloor, int* targetFloor, int* currentDirection, 
 	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3]);
 
+// initialize the state
+void state_init(state* current);
+
 // updates the current / last (previous) floor variable 
 // returns 1 if there's been a change in floors (state), 0 otherwise
 int updateFloor(int* curlastFloor);
 
-// martin's branch
