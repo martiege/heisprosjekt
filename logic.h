@@ -36,13 +36,4 @@ void closeDoor(int* timer, int currentDirection);
 // handle emergency
 void handleEmergency(state* current);
 
-
-
-// out of date
-void moveToFloor(int* currentFloor, int* targetFloor, int* currentDirection,
-	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3],
-	int requestedFloors[4]);
-
-
-
 #endif // #ifndef __INCLUDE_LOGIC_H__

@@ -19,6 +19,7 @@ int desiredDirection(int currentFloor, int targetFloor)
 	}
 }
 
+
 int shouldStop(int currentFloor, int currentDirection, int insideButtons[4],
 	int outsideUpButtons[3], int outsideDownButtons[3])
 {
@@ -41,33 +42,7 @@ int shouldStop(int currentFloor, int currentDirection, int insideButtons[4],
 		}
 	}
 	return 0;
-	/*
-	for (int i = 0; i < 4; ++i)
-	{
-
-		if (desiredDirection(currentFloor, insideButtons[i])  == currentDirection)
-		{
-			return 1;
-		}
-
-		if (i != 3)
-		{
-			if (desiredDirection(currentFloor, outsideUpButtons[i]) == currentDirection)
-			{
-				return 1;
-			}
-		}
-		if (i != 0)
-		{
-			if (desiredDirection(currentFloor, outsideDownButtons[i - 1]) == currentDirection)
-			{
-				return 1;
-			}
-		}
-	}
-	*/
 }
-
 
 
 int nextTargetFloor(int currentFloor, int* targetFloor, int currentDirection,
@@ -126,7 +101,7 @@ int nextTarget(state* current)
 	}
 }
 
-
+//resets timer, stops motor and opens door (lights up lamp)
 void openDoor(int* timer)
 {
 	*timer = time(NULL);
@@ -134,7 +109,7 @@ void openDoor(int* timer)
 	elev_set_door_open_lamp(1);
 }
 
-
+//resets timer, closes door (light turns off) and sets direction of motor
 void closeDoor(int* timer, int dir)
 {
 	*timer = 0;
@@ -143,6 +118,7 @@ void closeDoor(int* timer, int dir)
 }
 
 
+//logic for what to do in case the stop button is pressed
 void handleEmergency(state* current)
 {
 	// stops the elevator and updates the necessary values in the state
