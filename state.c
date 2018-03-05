@@ -4,6 +4,23 @@
 #include "state.h"
 
 
+//resets timer, stops motor and opens door (lights up lamp)
+void openDoor(state* current)
+{
+	current->timer = time(NULL);
+	elev_set_motor_direction(0);
+	elev_set_door_open_lamp(1);
+}
+
+//resets timer, closes door (light turns off) and sets direction of motor
+void closeDoor(state* current)
+{
+	current->timer = 0;
+	elev_set_door_open_lamp(0);
+	elev_set_motor_direction(current->dir);
+}
+
+// initializes the state and puts it into a valid floor state
 void state_init(state* current)
 {
 	// intializes all the variables in the state

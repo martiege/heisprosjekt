@@ -7,16 +7,19 @@
 
 
 
-int desiredDirection(int currentFloor, int targetFloor)
+int desiredDirection(state* current)
 {
-	if (currentFloor == targetFloor)
+	// if we're at the target, the current direction should be DIRN_STOP / 0
+	if ((current->floor) == (current->target))
 	{
 		return 0;
 	}
-	else if (currentFloor < targetFloor)
+	// if the target is above the current floor, then the current direction should be DIRN_UP / 1
+	else if ((current->floor) < (current->target))
 	{
 		return 1;
 	}
+	// if the target is below the current floor, then the current direction should be DIRN_DOWN / -1
 	else
 	{
 		return -1;
@@ -43,46 +46,11 @@ int toStop(state* current)
   	{
     		if (current->dir == -1)
     		{
-    	  	return 1;
+				return 1;
     		}
   	}
 	
 	return 0;
-}
-
-
-int nextTargetFloor(int currentFloor, int* targetFloor, int currentDirection,
-	int insideButtons[4], int outsideUpButtons[3], int outsideDownButtons[3])
-{
-	// TODO: add logic prioritize 1st floor, then 4th
-
-	// will always prioritize:  insideButtons > outsideUpButtons > outsideDownButtons
-	// and:  1st floor > 2nd floor > 3rd floor > 4th floor
-	for (int i = 0; i < 4; ++i)
-	{
-		if (currentFloor != i)
-		{
-			if (insideButtons[i] )
-			{
-				*targetFloor = i;
-				//*currentDirection = desiredDirection(currentFloor, i);
-				break;
-			}
-			if ((i != 3) && (outsideUpButtons[i]))
-			{
-				*targetFloor = i;
-				//*currentDirection = desiredDirection(currentFloor, i);
-				break;
-			}
-			if ((i != 0) && (outsideDownButtons[i - 1]))
-			{
-				*targetFloor = i;
-				//*currentDirection = desiredDirection(currentFloor, i);
-				break;
-			}
-		}
-	}
-	return ((*targetFloor) != -1);
 }
 
 
@@ -103,28 +71,12 @@ int nextTarget(state* current)
 				 ((priorityList[i] != 0) && ((current->buttons)[BUTTON_CALL_DOWN][priorityList[i]])) )
 			{
 				current->target = priorityList[i];
-				current->dir = desiredDirection(current->floor, priorityList[i]);
+				current->dir = desiredDirection(current);
 				break;
 			}
 		}
 	}
 	return ((current->target) != -1);
-}
-
-//resets timer, stops motor and opens door (lights up lamp)
-void openDoor(int* timer)
-{
-	*timer = time(NULL);
-	elev_set_motor_direction(0);
-	elev_set_door_open_lamp(1);
-}
-
-//resets timer, closes door (light turns off) and sets direction of motor
-void closeDoor(int* timer, int dir)
-{
-	*timer = 0;
-	elev_set_door_open_lamp(0);
-	elev_set_motor_direction(dir);
 }
 
 
@@ -154,7 +106,7 @@ void handleEmergency(state* current)
 			elev_set_motor_direction(0);
 			if  (elev_get_floor_sensor_signal() != -1)
 			{
-				//openDoor = 1;
+				// opens door if we're in a defined state
 				current->timer = time(NULL);
 				elev_set_door_open_lamp(1);
 			}
@@ -163,7 +115,7 @@ void handleEmergency(state* current)
 }
 
 
-int updateFloor(int* curlastFloor)
+int updateFloor(state* current)
 {
 	// checks for a valid floor
 	int floor = elev_get_floor_sensor_signal();
@@ -171,7 +123,7 @@ int updateFloor(int* curlastFloor)
 	if ( floor != -1 )
 	{
 		// checks for a new floor
-		if ( (floor != (*curlastFloor)) || ((*curlastFloor) == -1) ) 
+		if ( (floor != (current->floor)) || ((current->floor) == -1) ) 
 		{
 			// changes the floor and returns 1 to show that a change has happened
 			*curlastFloor = floor;
@@ -184,6 +136,66 @@ int updateFloor(int* curlastFloor)
 }
 
 
+void checkFloor(state* current)
+{
+	// changes which floor light is on
+	floorLight(current->floor);
+	
+	// update state if we've reached the target
+	if ((current->floor) == (current->target))
+	{
+		current->target = -1;
+		current->dir = 0;
+		openDoor(current);
+		clearButtons((current->floor), current);
+	}
+
+	// if we haven't reached the target, have a temporary stop if needed
+	else if (toStop(current))
+	{
+		openDoor(current);
+		clearButtons((current->floor), current);
+	}
+}
+
+
+void findNewTargets(state* current)
+{
+	// special case, elevator has stopped and someone wants to open 
+	// the door in the current floor
+	if (((current->floor != 3) && (elev_get_button_signal(BUTTON_CALL_UP, current->floor)))   || 
+		((current->floor != 0) && (elev_get_button_signal(BUTTON_CALL_DOWN, current->floor))) || 
+		(elev_get_button_signal(BUTTON_COMMAND, current->floor)) )
+	{
+		openDoor(current);
+	}
+	
+	// updates the target, returns 1 if there is a new target
+	else if (nextTarget(current)) 
+	{
+		// sets the new direction based on the changes in target
+		current->dir = desiredDirection(current);
+	}
+	else
+	{
+		// target has been reached, if necessary a new target
+		// will be set next
+
+		current->target = -1;
+		current->dir = 0;
+		
+		// if we're in an undefined state (shouldn't happen as it's handled in state_init)
+		// there should be set a target for 1st floor
+		if (current->floor == -1)
+		{
+			current->target = 0;
+			current->dir = -1;
+		}
+
+	}
+}
+
+
 void runElevatorLogic()
 {
 	int stop = 0;
@@ -193,37 +205,53 @@ void runElevatorLogic()
 	elev_set_motor_direction(0);
 
     while (!stop) {
-		// NEW FLOOR
-		if ( updateFloor(&(current->floor)) )
+		// check for new floor
+		if (updateFloor(current))
 		{
+			checkFloor(current);
+			/*
+			// changes which floor light is on
 			floorLight(current->floor);
 			
+			// update state if we've reached the target
 			if ((current->floor) == (current->target))
 			{
 				current->target = -1;
 				current->dir = 0;
-				openDoor(&(current->timer));
+				openDoor(current);
 				clearButtons((current->floor), current);
 			}
 
+			// if we haven't reached the target, have a temporary stop if needed
 			else if (toStop(current))
 			{
-				openDoor(&(current->timer));
+				openDoor(current);
 				clearButtons((current->floor), current);
 			}
+			*/
 		}
 
-		// CHANGE TARGET FLOOR - aka endre dir
+		// check for new targets if there's no target, and the door isn't open
 		if ((current->target == -1) && (current->timer == 0))
 		{
+			findNewTargets(current);
+			/*
+			// special case, elevator has stopped and someone wants to open 
+			// the door in the current floor
 			if (((current->floor != 3) && (elev_get_button_signal(BUTTON_CALL_UP, current->floor)))   || 
 				((current->floor != 0) && (elev_get_button_signal(BUTTON_CALL_DOWN, current->floor))) || 
 				(elev_get_button_signal(BUTTON_COMMAND, current->floor)) )
 			{
-				openDoor(&(current->timer));
+				openDoor(current);
 			}
 			
-			else if ( !(nextTarget(current)) ) 
+			// updates the target, returns 1 if there is a new target
+			else if (nextTarget(current)) 
+			{
+				// sets the new direction based on the changes in target
+				current->dir = desiredDirection(current);
+			}
+			else
 			{
 				// target has been reached, if necessary a new target
 				// will be set next
@@ -231,7 +259,7 @@ void runElevatorLogic()
 				current->target = -1;
 				current->dir = 0;
 				
-				// if we're in an undefined state (shouldn't happen after state_init)
+				// if we're in an undefined state (shouldn't happen as it's handled in state_init)
 				// there should be set a target for 1st floor
 				if (current->floor == -1)
 				{
@@ -240,28 +268,30 @@ void runElevatorLogic()
 				}
 
 			}
-			else
-			{
-				current->dir = desiredDirection(current->floor, current->target);
-			}
+			*/
 		}
 
+		// checks the timer, as long as it isn't 0, the doors should be open
 		if (current->timer)
 		{
+			// doors open, keep the motor stopped
 			elev_set_motor_direction(0);
 			if ( (current->timer + 3) <= time(NULL) )
 			{
-				closeDoor(&(current->timer), current->dir);
+				// reached the end of the timer (3 seconds since timer was started)
+				closeDoor(current);
 			}
 		}
 		else
 		{
+			// doors closed, keep moving
 			elev_set_motor_direction(current->dir);
 		}
 
+		// updates the buttons matrix based on users
 		buttonUpdate(current);
 
-
+		// updates the emergency state and handles it
 		current->emergency = elev_get_stop_signal();
 		if (current->emergency)
 		{
@@ -276,6 +306,8 @@ void runElevatorLogic()
             elev_set_motor_direction(current->dir);
 			stop = 1;
         }
+		
+		// small wait time to ensure the loop isn't run too "fast"
 		usleep(1000);
     }
 }

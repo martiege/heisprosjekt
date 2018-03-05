@@ -19,6 +19,14 @@ typedef struct {
 }state;
 
 
+// opens door and starts the timer
+void openDoor(state* current);
+
+
+// closes door and stops the timer
+void closeDoor(state* current);
+
+
 // initialize the state
 void state_init(state* current);
 

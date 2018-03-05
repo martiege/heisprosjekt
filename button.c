@@ -36,19 +36,11 @@ void clearButtons(int floor, state* current)
 
 void buttonUpdate(state* current)
 {
-	// clear the buttons on the current floor if necessary
-/*
-	if ( ((current->floor) != -1) && ((current->floor) == elev_get_floor_sensor_signal()))
-	{
-		clearButtons((current->floor), current);
-	}
-*/
 	// go through all the floors
 	for (int f = 0; f < 4; ++f)
 	{
 		// check the buttons, don't check up if we're on floor 4 and down if we're on floor 1
 		// only check if it hasn't been checked before
-
 
 		// up button
 		if ((f != 3) && !(current->buttons[BUTTON_CALL_UP][f]))
