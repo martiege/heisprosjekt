@@ -126,7 +126,7 @@ int updateFloor(state* current)
 		if ( (floor != (current->floor)) || ((current->floor) == -1) ) 
 		{
 			// changes the floor and returns 1 to show that a change has happened
-			*curlastFloor = floor;
+			current->floor = floor;
 			return 1;
 		}
 	}
