@@ -37,66 +37,12 @@ int main() {
 		if (updateFloor(current))
 		{
 			checkFloor(current);
-			/*
-			// changes which floor light is on
-			floorLight(current->floor);
-			
-			// update state if we've reached the target
-			if ((current->floor) == (current->target))
-			{
-				current->target = -1;
-				current->dir = 0;
-				openDoor(current);
-				clearButtons((current->floor), current);
-			}
-
-			// if we haven't reached the target, have a temporary stop if needed
-			else if (toStop(current))
-			{
-				openDoor(current);
-				clearButtons((current->floor), current);
-			}
-			*/
 		}
 
 		// check for new targets if there's no target, and the door isn't open
 		if ((current->target == -1) && (current->timer == 0))
 		{
 			findNewTargets(current);
-			/*
-			// special case, elevator has stopped and someone wants to open 
-			// the door in the current floor
-			if (((current->floor != 3) && (elev_get_button_signal(BUTTON_CALL_UP, current->floor)))   || 
-				((current->floor != 0) && (elev_get_button_signal(BUTTON_CALL_DOWN, current->floor))) || 
-				(elev_get_button_signal(BUTTON_COMMAND, current->floor)) )
-			{
-				openDoor(current);
-			}
-			
-			// updates the target, returns 1 if there is a new target
-			else if (nextTarget(current)) 
-			{
-				// sets the new direction based on the changes in target
-				current->dir = desiredDirection(current);
-			}
-			else
-			{
-				// target has been reached, if necessary a new target
-				// will be set next
-
-				current->target = -1;
-				current->dir = 0;
-				
-				// if we're in an undefined state (shouldn't happen as it's handled in state_init)
-				// there should be set a target for 1st floor
-				if (current->floor == -1)
-				{
-					current->target = 0;
-					current->dir = -1;
-				}
-
-			}
-			*/
 		}
 
 		// checks the timer, as long as it isn't 0, the doors should be open
